@@ -66,44 +66,26 @@ class TrendChart {
         });
     }
 
-    // Helper function to get all months between first and last date
-    getAllMonthsBetween(firstDate, lastDate) {
-        const months = [];
-        let currentDate = new Date(firstDate);
-        const endDate = new Date(lastDate);
-        
-        while (currentDate <= endDate) {
-            months.push(currentDate.toISOString().slice(0, 7));
-            currentDate.setMonth(currentDate.getMonth() + 1);
-        }
-        
-        return months;
-    }
-
     update(durations) {
-        // Find first and last dates in all metrics
-        let firstDate = null;
-        let lastDate = null;
-        
+        // Get all unique months from all metrics
+        const allMonths = new Set();
         Object.keys(this.colors).forEach(metric => {
             durations.forEach(d => {
                 if (d[metric] && d[metric].month) {
-                    const currentDate = new Date(d[metric].month + "-01");
-                    if (!firstDate || currentDate < firstDate) firstDate = currentDate;
-                    if (!lastDate || currentDate > lastDate) lastDate = currentDate;
+                    allMonths.add(d[metric].month);
                 }
             });
         });
-
-        // Get all months between first and last date
-        const months = firstDate && lastDate ? this.getAllMonthsBetween(firstDate, lastDate) : [];
+        const months = [...allMonths].sort();
 
         // Create datasets for each metric
         const datasets = Object.keys(this.colors).map(metric => {
             const monthlyAverages = months.map(month => {
                 const monthData = durations
-                    .filter(d => d[metric] && d[metric].month === month)
-                    .map(d => d[metric].value);
+                    .map(d => d[metric])
+                    .filter(d => d !== null)
+                    .filter(d => d.month === month)
+                    .map(d => d.value);
                 
                 if (monthData.length === 0) return null;
                 const sum = monthData.reduce((acc, val) => acc + val, 0);
@@ -117,7 +99,7 @@ class TrendChart {
                 backgroundColor: this.colors[metric],
                 tension: 0.4,
                 fill: false,
-                spanGaps: true  // Pour connecter les points même avec des données manquantes
+                spanGaps: true
             };
         });
 
