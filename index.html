@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pods Workflow Fluidity</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Pods Workflow Fluidity</h1>
+
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Cycle Time Card -->
+            <div class="card cycle-time">
+                <h2>Dev Cycle Time</h2>
+                <p>
+                    <span>Average:</span>
+                    <span><span id="averageTime">0</span> days</span>
+                </p>
+                <p>
+                    <span>Median:</span>
+                    <span><span id="medianTime">0</span> days</span>
+                </p>
+            </div>
+
+            <!-- Filters Card -->
+            <div class="card filters">
+                <!-- Platform Filter -->
+                <div class="filter-section">
+                    <label class="filter-label">
+                        <i class="fas fa-layer-group"></i>
+                        Platform
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="platformFilter">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Month Filter -->
+                <div class="filter-section">
+                    <label class="filter-label">
+                        <i class="fas fa-calendar"></i>
+                        Month
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="monthFilter">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Stat Type Toggle -->
+                <div class="filter-section">
+                    <label class="filter-label">
+                        <i class="fas fa-chart-line"></i>
+                        Statistics Type
+                    </label>
+                    <div class="stat-toggle">
+                        <input type="radio" id="average" name="statType" value="average" checked>
+                        <label for="average">Average</label>
+                        <input type="radio" id="median" name="statType" value="median">
+                        <label for="median">Median</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PR Stats Card -->
+            <div class="card distribution-chart">
+                <div class="filter-section">
+                    <label class="filter-label">
+                        <i class="fas fa-chart-pie"></i>
+                        PR Review Time
+                    </label>
+                </div>
+                <canvas id="prPieChart"></canvas>
+            </div>
+
+            <!-- Tester Stats Card -->
+            <div class="card distribution-chart">
+                <div class="filter-section">
+                    <label class="filter-label">
+                        <i class="fas fa-chart-pie"></i>
+                        Tester Assignment Time
+                    </label>
+                </div>
+                <canvas id="testerPieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-container">
+            <div class="graph-container">
+                <canvas id="timeGraph"></canvas>
+            </div>
+            <div class="graph-container">
+                <canvas id="trendGraph"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="barChart.js"></script>
+    <script src="trendChart.js"></script>
+    <script src="distributionCharts.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
