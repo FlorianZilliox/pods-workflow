@@ -30,6 +30,20 @@
 
             <!-- Filters Card -->
             <div class="card filters">
+                <!-- Year Toggle -->
+                <div class="filter-section">
+                    <label class="filter-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        Year
+                    </label>
+                    <div class="stat-toggle">
+                        <input type="radio" id="year2024" name="yearToggle" value="2024" checked>
+                        <label for="year2024">2024</label>
+                        <input type="radio" id="year2025" name="yearToggle" value="2025">
+                        <label for="year2025">2025</label>
+                    </div>
+                </div>
+
                 <!-- Platform Filter -->
                 <div class="filter-section">
                     <label class="filter-label">
@@ -38,6 +52,19 @@
                     </label>
                     <div class="select-wrapper">
                         <select id="platformFilter">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Pod Filter -->
+                <div class="filter-section">
+                    <label class="filter-label">
+                        <i class="fas fa-users"></i>
+                        Pod
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="podFilter">
                             <option value="all">All</option>
                         </select>
                     </div>
