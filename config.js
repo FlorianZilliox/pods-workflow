@@ -1,11 +1,13 @@
 // Constants for API
-const SHEET_ID = '1dU5Fa_8m6Uw4HQ3WTSncs9Bhe449ML-aSbAoPmT1o1c';
+const SHEET_ID_2024 = '1dU5Fa_8m6Uw4HQ3WTSncs9Bhe449ML-aSbAoPmT1o1c';
+const SHEET_ID_2025 = '1d8m2iyaGIcLysV5QtumYzGH8bda5w-xdufTBS8Fdyj8'; // Replace with your 2025 Google Sheet ID
 const API_KEY = 'AIzaSyD8uw55tuJcdtqUanZ7J3DbsZeHCn-eSrM';
-const RANGE = 'Data!A:J';
+const RANGE = 'Data!A:K'; // Updated to include column K (Pod)
 
 // Fetch data from Google Sheets
-async function fetchData() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+async function fetchData(year = 2024) {
+    const sheetId = year === 2024 ? SHEET_ID_2024 : SHEET_ID_2025;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RANGE}?key=${API_KEY}`;
     const response = await fetch(url);
     const result = await response.json();
     return result.values || [];
