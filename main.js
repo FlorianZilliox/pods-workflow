@@ -93,7 +93,7 @@ async function init() {
 
         // Update all charts
         barChart.update(monthFilteredDurations, statType);
-        trendChart.update(monthFilteredDurations);
+        trendChart.update(monthFilteredDurations, statType);
         prDistribution.update(monthFilteredDurations);
         testerDistribution.update(monthFilteredDurations);
 
