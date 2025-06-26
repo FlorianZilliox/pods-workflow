@@ -66,7 +66,18 @@ class TrendChart {
         });
     }
 
-    update(durations) {
+    calculateStat(data, type) {
+        if (data.length === 0) return 0;
+        if (type === 'median') {
+            const sorted = data.sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            return sorted.length % 2 !== 0 ? sorted[mid] : roundToNearest((sorted[mid - 1] + sorted[mid]) / 2);
+        }
+        const sum = data.reduce((acc, val) => acc + val, 0);
+        return roundToNearest(sum / data.length);
+    }
+
+    update(durations, statType) {
         // Get all unique months from all metrics
         const allMonths = new Set();
         Object.keys(this.colors).forEach(metric => {
@@ -80,7 +91,7 @@ class TrendChart {
 
         // Create datasets for each metric
         const datasets = Object.keys(this.colors).map(metric => {
-            const monthlyAverages = months.map(month => {
+            const monthlyStats = months.map(month => {
                 const monthData = durations
                     .map(d => d[metric])
                     .filter(d => d !== null)
@@ -88,13 +99,14 @@ class TrendChart {
                     .map(d => d.value);
                 
                 if (monthData.length === 0) return null;
-                const sum = monthData.reduce((acc, val) => acc + val, 0);
-                return roundToNearest(sum / monthData.length);
+                
+                // Use the same calculation as barChart
+                return this.calculateStat(monthData, statType);
             });
 
             return {
                 label: metric,
-                data: monthlyAverages,
+                data: monthlyStats,
                 borderColor: this.colors[metric],
                 backgroundColor: this.colors[metric],
                 tension: 0.4,
@@ -102,6 +114,9 @@ class TrendChart {
                 spanGaps: true
             };
         });
+
+        // Update chart title to reflect current stat type
+        this.chart.options.scales.y.title.text = `Duration (business days) - ${statType === 'median' ? 'Median' : 'Average'}`;
 
         this.chart.data.labels = months.map(month => {
             const [year, monthNum] = month.split('-');
