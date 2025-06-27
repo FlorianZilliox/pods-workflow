@@ -106,13 +106,15 @@ async function init() {
                 );
             });
 
+        const statType = document.querySelector('input[name="statType"]:checked').value;
+
         // Update all charts
-        barChart.update(monthFilteredDurations);
-        trendChart.update(monthFilteredDurations);
+        barChart.update(monthFilteredDurations, statType);
+        trendChart.update(monthFilteredDurations, statType);
         prDistribution.update(monthFilteredDurations);
         testerDistribution.update(monthFilteredDurations);
 
-        // Update Dev Cycle Time box - Calculate as sum of steps
+        // Update Dev Cycle Time box - ALWAYS use average and sum of steps
         const stepsToSum = [
             'Development Time',
             'Pull Request Time', 
@@ -159,6 +161,9 @@ async function init() {
     orgFilter.addEventListener('change', updateCharts);
     podFilter.addEventListener('change', updateCharts);
     monthFilter.addEventListener('change', updateCharts);
+    document.querySelectorAll('input[name="statType"]').forEach(radio => {
+        radio.addEventListener('change', updateCharts);
+    });
     document.querySelectorAll('input[name="yearToggle"]').forEach(radio => {
         radio.addEventListener('change', handleYearChange);
     });
