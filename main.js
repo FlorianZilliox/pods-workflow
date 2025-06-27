@@ -97,14 +97,36 @@ async function init() {
         prDistribution.update(monthFilteredDurations);
         testerDistribution.update(monthFilteredDurations);
 
-        // Update Dev Cycle Time box
-        const devCycleDurations = monthFilteredDurations
-            .map(d => d['Dev Cycle Time'])
-            .filter(d => d !== null)
-            .map(d => d.value);
+        // Update Dev Cycle Time box - Calculate as sum of steps
+        const stepsToSum = [
+            'Development Time',
+            'Pull Request Time', 
+            'Design Review Time',
+            'Tester Assignment Time',
+            'Testing Time',
+            'PO Validation Time'
+        ];
 
-        document.getElementById('averageTime').textContent = barChart.calculateStat(devCycleDurations, 'average');
-        document.getElementById('medianTime').textContent = barChart.calculateStat(devCycleDurations, 'median');
+        // Calculate sum of averages
+        const stepAverages = stepsToSum.map(step => {
+            const values = monthFilteredDurations
+                .map(d => d[step])
+                .filter(d => d !== null)
+                .map(d => d.value);
+            return barChart.calculateStat(values, 'average');
+        });
+        
+        // Calculate sum of medians
+        const stepMedians = stepsToSum.map(step => {
+            const values = monthFilteredDurations
+                .map(d => d[step])
+                .filter(d => d !== null)
+                .map(d => d.value);
+            return barChart.calculateStat(values, 'median');
+        });
+        
+        document.getElementById('averageTime').textContent = Math.round(stepAverages.reduce((sum, avg) => sum + avg, 0));
+        document.getElementById('medianTime').textContent = Math.round(stepMedians.reduce((sum, med) => sum + med, 0));
     };
 
     // Year toggle handler
