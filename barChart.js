@@ -73,7 +73,7 @@ class BarChart {
         });
     }
 
-    update(durations, statType) {
+    update(durations) {
         const steps = [
             'Backlog Time',
             'Development Time',
@@ -99,17 +99,17 @@ class BarChart {
                     'PO Validation Time'
                 ];
                 
-                const stepStats = stepsToSum.map(s => {
+                const stepAverages = stepsToSum.map(s => {
                     const values = durations
                         .map(d => d[s])
                         .filter(d => d !== null)
                         .map(d => d.value);
-                    const stat = this.calculateStat(values, statType);
+                    const avg = this.calculateAverage(values);
                     // Treat 0 as 0.5 for consistency
-                    return stat === 0 ? 0.5 : stat;
+                    return avg === 0 ? 0.5 : avg;
                 });
                 
-                return Math.round(stepStats.reduce((sum, val) => sum + val, 0));
+                return Math.round(stepAverages.reduce((sum, val) => sum + val, 0));
             }
             
             // Special handling for Full Cycle Time - include Backlog Time
@@ -124,17 +124,17 @@ class BarChart {
                     'PO Validation Time'
                 ];
                 
-                const stepStats = stepsToSum.map(s => {
+                const stepAverages = stepsToSum.map(s => {
                     const values = durations
                         .map(d => d[s])
                         .filter(d => d !== null)
                         .map(d => d.value);
-                    const stat = this.calculateStat(values, statType);
+                    const avg = this.calculateAverage(values);
                     // Treat 0 as 0.5 for consistency
-                    return stat === 0 ? 0.5 : stat;
+                    return avg === 0 ? 0.5 : avg;
                 });
                 
-                return Math.round(stepStats.reduce((sum, val) => sum + val, 0));
+                return Math.round(stepAverages.reduce((sum, val) => sum + val, 0));
             }
             
             // Normal calculation for other steps
@@ -142,18 +142,18 @@ class BarChart {
                 .map(d => d[step])
                 .filter(d => d !== null)
                 .map(d => d.value);
-            return this.calculateStat(values, statType);
+            return this.calculateAverage(values);
         });
 
         const datasets = [{
-            label: statType === 'average' ? 'Average (business days)' : 'Median (business days)',
-            data: this.originalValues.map((stat, index) => {
+            label: 'Average (business days)',
+            data: this.originalValues.map((avg, index) => {
                 // Display 0.5 instead of 0 for better visual representation
                 // But not for Full Cycle Time and Dev Cycle Time
-                if (stat === 0 && index < 7) { // First 7 are individual steps
+                if (avg === 0 && index < 7) { // First 7 are individual steps
                     return 0.5;
                 }
-                return stat;
+                return avg;
             }),
             backgroundColor: 'rgba(74, 144, 226, 0.6)',
             borderColor: 'rgba(74, 144, 226, 1)',
@@ -165,13 +165,8 @@ class BarChart {
         this.chart.update();
     }
 
-    calculateStat(data, type) {
+    calculateAverage(data) {
         if (data.length === 0) return 0;
-        if (type === 'median') {
-            const sorted = data.sort((a, b) => a - b);
-            const mid = Math.floor(sorted.length / 2);
-            return sorted.length % 2 !== 0 ? sorted[mid] : roundToNearest((sorted[mid - 1] + sorted[mid]) / 2);
-        }
         const sum = data.reduce((acc, val) => acc + val, 0);
         return roundToNearest(sum / data.length);
     }
