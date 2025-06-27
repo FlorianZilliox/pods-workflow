@@ -13,13 +13,13 @@ class BarChart {
                         beginAtZero: true, 
                         title: { 
                             display: true, 
-                            text: 'Durée (jours ouvrés)' 
+                            text: 'Duration (business days)' 
                         }
                     },
                     x: { 
                         title: { 
                             display: true, 
-                            text: 'Étapes' 
+                            text: 'Steps' 
                         }, 
                         grid: {
                             offset: false
@@ -54,11 +54,11 @@ class BarChart {
                                 
                                 // If original value was 0 and we're showing 0.5
                                 if (originalValue === 0 && value === 0.5) {
-                                    label += '<1 jour';
+                                    label += '<1 day';
                                 } else if (value === 1) {
-                                    label += '1 jour';
+                                    label += '1 day';
                                 } else {
-                                    label += value + ' jours';
+                                    label += value + ' days';
                                 }
                                 return label;
                             }
@@ -96,7 +96,7 @@ class BarChart {
         });
 
         const datasets = [{
-            label: statType === 'average' ? 'Moyenne (jours ouvrés)' : 'Médiane (jours ouvrés)',
+            label: statType === 'average' ? 'Average (business days)' : 'Median (business days)',
             data: this.originalValues.map((stat, index) => {
                 // Display 0.5 instead of 0 for better visual representation
                 // But not for Full Cycle Time and Dev Cycle Time
