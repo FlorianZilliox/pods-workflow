@@ -107,26 +107,40 @@ async function init() {
             'PO Validation Time'
         ];
 
-        // Calculate sum of averages
+        // Calculate sum of averages (treating 0 as 0.5)
         const stepAverages = stepsToSum.map(step => {
             const values = monthFilteredDurations
                 .map(d => d[step])
                 .filter(d => d !== null)
                 .map(d => d.value);
-            return barChart.calculateStat(values, 'average');
+            const stat = barChart.calculateStat(values, 'average');
+            // If the calculated stat is 0, count it as 0.5
+            return stat === 0 ? 0.5 : stat;
         });
         
-        // Calculate sum of medians
+        // Calculate sum of medians (treating 0 as 0.5)
         const stepMedians = stepsToSum.map(step => {
             const values = monthFilteredDurations
                 .map(d => d[step])
                 .filter(d => d !== null)
                 .map(d => d.value);
-            return barChart.calculateStat(values, 'median');
+            const stat = barChart.calculateStat(values, 'median');
+            // If the calculated stat is 0, count it as 0.5
+            return stat === 0 ? 0.5 : stat;
         });
         
-        document.getElementById('averageTime').textContent = Math.round(stepAverages.reduce((sum, avg) => sum + avg, 0));
-        document.getElementById('medianTime').textContent = Math.round(stepMedians.reduce((sum, med) => sum + med, 0));
+        const avgSum = stepAverages.reduce((sum, avg) => sum + avg, 0);
+        const medSum = stepMedians.reduce((sum, med) => sum + med, 0);
+        
+        console.log('Dev Cycle Time calculation:', {
+            stepAverages,
+            stepMedians,
+            avgSum: Math.round(avgSum),
+            medSum: Math.round(medSum)
+        });
+        
+        document.getElementById('averageTime').textContent = Math.round(avgSum);
+        document.getElementById('medianTime').textContent = Math.round(medSum);
     };
 
     // Year toggle handler
