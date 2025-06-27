@@ -87,7 +87,57 @@ class BarChart {
         ];
 
         // Calculate and store original values
-        this.originalValues = steps.map(step => {
+        this.originalValues = steps.map((step, index) => {
+            // Special handling for Dev Cycle Time - calculate as sum of steps
+            if (step === 'Dev Cycle Time') {
+                const stepsToSum = [
+                    'Development Time',
+                    'Pull Request Time',
+                    'Design Review Time',
+                    'Tester Assignment Time',
+                    'Testing Time',
+                    'PO Validation Time'
+                ];
+                
+                const stepStats = stepsToSum.map(s => {
+                    const values = durations
+                        .map(d => d[s])
+                        .filter(d => d !== null)
+                        .map(d => d.value);
+                    const stat = this.calculateStat(values, statType);
+                    // Treat 0 as 0.5 for consistency
+                    return stat === 0 ? 0.5 : stat;
+                });
+                
+                return Math.round(stepStats.reduce((sum, val) => sum + val, 0));
+            }
+            
+            // Special handling for Full Cycle Time - include Backlog Time
+            if (step === 'Full Cycle Time') {
+                const stepsToSum = [
+                    'Backlog Time',
+                    'Development Time',
+                    'Pull Request Time',
+                    'Design Review Time',
+                    'Tester Assignment Time',
+                    'Testing Time',
+                    'PO Validation Time'
+                ];
+                
+                const stepStats = stepsToSum.map(s => {
+                    const values = durations
+                        .map(d => d[s])
+                        .filter(d => d !== null)
+                        .map(d => d.value);
+                    const stat = this.calculateStat(values, statType);
+                    // Treat 0 as 0.5 for consistency
+                    return stat === 0 ? 0.5 : stat;
+                });
+                
+                return Math.round(stepStats.reduce((sum, val) => sum + val, 0));
+            }
+            
+            // Normal calculation for other steps
             const values = durations
                 .map(d => d[step])
                 .filter(d => d !== null)
