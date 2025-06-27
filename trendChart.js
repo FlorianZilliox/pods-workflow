@@ -51,7 +51,12 @@ class TrendChart {
                                 if (label) {
                                     label += ': ';
                                 }
-                                label += context.parsed.y.toFixed(1) + ' business days';
+                                const value = context.parsed.y;
+                                if (value === 0) {
+                                    label += '<1 business day';
+                                } else {
+                                    label += value.toFixed(1) + ' business days';
+                                }
                                 return label;
                             }
                         }
