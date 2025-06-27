@@ -73,7 +73,7 @@ class BarChart {
         });
     }
 
-    update(durations) {
+    update(durations, statType) {
         const steps = [
             'Backlog Time',
             'Development Time',
@@ -88,72 +88,23 @@ class BarChart {
 
         // Calculate and store original values
         this.originalValues = steps.map((step, index) => {
-            // Special handling for Dev Cycle Time - calculate as sum of steps
-            if (step === 'Dev Cycle Time') {
-                const stepsToSum = [
-                    'Development Time',
-                    'Pull Request Time',
-                    'Design Review Time',
-                    'Tester Assignment Time',
-                    'Testing Time',
-                    'PO Validation Time'
-                ];
-                
-                const stepAverages = stepsToSum.map(s => {
-                    const values = durations
-                        .map(d => d[s])
-                        .filter(d => d !== null)
-                        .map(d => d.value);
-                    const avg = this.calculateAverage(values);
-                    // Treat 0 as 0.5 for consistency
-                    return avg === 0 ? 0.5 : avg;
-                });
-                
-                return Math.round(stepAverages.reduce((sum, val) => sum + val, 0));
-            }
-            
-            // Special handling for Full Cycle Time - include Backlog Time
-            if (step === 'Full Cycle Time') {
-                const stepsToSum = [
-                    'Backlog Time',
-                    'Development Time',
-                    'Pull Request Time',
-                    'Design Review Time',
-                    'Tester Assignment Time',
-                    'Testing Time',
-                    'PO Validation Time'
-                ];
-                
-                const stepAverages = stepsToSum.map(s => {
-                    const values = durations
-                        .map(d => d[s])
-                        .filter(d => d !== null)
-                        .map(d => d.value);
-                    const avg = this.calculateAverage(values);
-                    // Treat 0 as 0.5 for consistency
-                    return avg === 0 ? 0.5 : avg;
-                });
-                
-                return Math.round(stepAverages.reduce((sum, val) => sum + val, 0));
-            }
-            
-            // Normal calculation for other steps
+            // For Dev Cycle Time and Full Cycle Time, use REAL values, not sum
             const values = durations
                 .map(d => d[step])
                 .filter(d => d !== null)
                 .map(d => d.value);
-            return this.calculateAverage(values);
+            return this.calculateStat(values, statType);
         });
 
         const datasets = [{
-            label: 'Average (business days)',
-            data: this.originalValues.map((avg, index) => {
+            label: statType === 'average' ? 'Average (business days)' : 'Median (business days)',
+            data: this.originalValues.map((stat, index) => {
                 // Display 0.5 instead of 0 for better visual representation
                 // But not for Full Cycle Time and Dev Cycle Time
-                if (avg === 0 && index < 7) { // First 7 are individual steps
+                if (stat === 0 && index < 7) { // First 7 are individual steps
                     return 0.5;
                 }
-                return avg;
+                return stat;
             }),
             backgroundColor: 'rgba(74, 144, 226, 0.6)',
             borderColor: 'rgba(74, 144, 226, 1)',
@@ -165,8 +116,13 @@ class BarChart {
         this.chart.update();
     }
 
-    calculateAverage(data) {
+    calculateStat(data, type) {
         if (data.length === 0) return 0;
+        if (type === 'median') {
+            const sorted = data.sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            return sorted.length % 2 !== 0 ? sorted[mid] : roundToNearest((sorted[mid - 1] + sorted[mid]) / 2);
+        }
         const sum = data.reduce((acc, val) => acc + val, 0);
         return roundToNearest(sum / data.length);
     }
