@@ -1,8 +1,8 @@
 // Constants for API
 const SHEET_ID_2024 = '1dU5Fa_8m6Uw4HQ3WTSncs9Bhe449ML-aSbAoPmT1o1c';
-const SHEET_ID_2025 = '1d8m2iyaGIcLysV5QtumYzGH8bda5w-xdufTBS8Fdyj8'; // Replace with your 2025 Google Sheet ID
+const SHEET_ID_2025 = 'YOUR_2025_SHEET_ID_HERE'; // Replace with your 2025 Google Sheet ID
 const API_KEY = 'AIzaSyD8uw55tuJcdtqUanZ7J3DbsZeHCn-eSrM';
-const RANGE = 'Data!A:K'; // Updated to include column K (Pod)
+const RANGE = 'Data!A:L'; // Updated to include column L (Org)
 
 // Fetch data from Google Sheets
 async function fetchData(year = 2024) {
