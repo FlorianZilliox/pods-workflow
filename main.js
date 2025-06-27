@@ -114,7 +114,7 @@ async function init() {
         prDistribution.update(monthFilteredDurations);
         testerDistribution.update(monthFilteredDurations);
 
-        // Update Dev Cycle Time box - ALWAYS use average and sum of steps
+        // Update Dev Cycle Time box - ALWAYS use average and sum of steps (regardless of toggle)
         const stepsToSum = [
             'Development Time',
             'Pull Request Time', 
@@ -141,7 +141,7 @@ async function init() {
         
         const avgSum = Math.round(stepAverages.reduce((sum, avg) => sum + avg, 0));
         
-        console.log('Dev Cycle Time calculation:', {
+        console.log('Dev Cycle Time card calculation (always average):', {
             stepAverages,
             avgSum
         });
