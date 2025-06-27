@@ -89,11 +89,9 @@ async function init() {
                 );
             });
 
-        const statType = document.querySelector('input[name="statType"]:checked').value;
-
         // Update all charts
-        barChart.update(monthFilteredDurations, statType);
-        trendChart.update(monthFilteredDurations, statType);
+        barChart.update(monthFilteredDurations);
+        trendChart.update(monthFilteredDurations);
         prDistribution.update(monthFilteredDurations);
         testerDistribution.update(monthFilteredDurations);
 
@@ -107,40 +105,25 @@ async function init() {
             'PO Validation Time'
         ];
 
-        // Calculate sum of averages (treating 0 as 0.5)
+        // Calculate sum of averages
         const stepAverages = stepsToSum.map(step => {
             const values = monthFilteredDurations
                 .map(d => d[step])
                 .filter(d => d !== null)
                 .map(d => d.value);
-            const stat = barChart.calculateStat(values, 'average');
-            // If the calculated stat is 0, count it as 0.5
-            return stat === 0 ? 0.5 : stat;
+            const avg = barChart.calculateAverage(values);
+            // If the calculated avg is 0, count it as 0.5
+            return avg === 0 ? 0.5 : avg;
         });
         
-        // Calculate sum of medians (treating 0 as 0.5)
-        const stepMedians = stepsToSum.map(step => {
-            const values = monthFilteredDurations
-                .map(d => d[step])
-                .filter(d => d !== null)
-                .map(d => d.value);
-            const stat = barChart.calculateStat(values, 'median');
-            // If the calculated stat is 0, count it as 0.5
-            return stat === 0 ? 0.5 : stat;
-        });
-        
-        const avgSum = stepAverages.reduce((sum, avg) => sum + avg, 0);
-        const medSum = stepMedians.reduce((sum, med) => sum + med, 0);
+        const avgSum = Math.round(stepAverages.reduce((sum, avg) => sum + avg, 0));
         
         console.log('Dev Cycle Time calculation:', {
             stepAverages,
-            stepMedians,
-            avgSum: Math.round(avgSum),
-            medSum: Math.round(medSum)
+            avgSum
         });
         
-        document.getElementById('averageTime').textContent = Math.round(avgSum);
-        document.getElementById('medianTime').textContent = Math.round(medSum);
+        document.getElementById('averageTime').textContent = avgSum;
     };
 
     // Year toggle handler
@@ -154,9 +137,6 @@ async function init() {
     platformFilter.addEventListener('change', updateCharts);
     podFilter.addEventListener('change', updateCharts);
     monthFilter.addEventListener('change', updateCharts);
-    document.querySelectorAll('input[name="statType"]').forEach(radio => {
-        radio.addEventListener('change', updateCharts);
-    });
     document.querySelectorAll('input[name="yearToggle"]').forEach(radio => {
         radio.addEventListener('change', handleYearChange);
     });
