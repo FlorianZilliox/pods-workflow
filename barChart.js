@@ -47,7 +47,12 @@ class BarChart {
                                 if (label) {
                                     label += ': ';
                                 }
-                                label += context.parsed.y.toFixed(1) + ' business days';
+                                const value = context.parsed.y;
+                                if (value === 0) {
+                                    label += '<1 business day';
+                                } else {
+                                    label += value.toFixed(1) + ' business days';
+                                }
                                 return label;
                             }
                         }
@@ -56,7 +61,31 @@ class BarChart {
                 interaction: {
                     intersect: true,
                     mode: 'point'
-                }
+                },
+                // Custom plugin to draw value labels on bars
+                plugins: [{
+                    afterDatasetsDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        chart.data.datasets.forEach((dataset, i) => {
+                            const meta = chart.getDatasetMeta(i);
+                            meta.data.forEach((bar, index) => {
+                                const value = dataset.data[index];
+                                const displayValue = value === 0 ? '<1' : value.toString();
+                                
+                                ctx.fillStyle = '#666';
+                                ctx.font = 'bold 12px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'bottom';
+                                
+                                // Position the text above the bar
+                                const x = bar.x;
+                                const y = bar.y - 5;
+                                
+                                ctx.fillText(displayValue, x, y);
+                            });
+                        });
+                    }
+                }]
             }
         });
     }
