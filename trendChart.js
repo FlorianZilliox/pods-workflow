@@ -22,7 +22,7 @@ class TrendChart {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Duration (business days)'
+                            text: 'Duration (business days) - Average'
                         }
                     },
                     x: {
@@ -52,10 +52,14 @@ class TrendChart {
                                     label += ': ';
                                 }
                                 const value = context.parsed.y;
-                                if (value === 0) {
-                                    label += '<1 business day';
+                                
+                                // Check if this is showing 0.5 which was originally 0
+                                if (value === 0.5) {
+                                    label += '<1 day';
+                                } else if (value === 1) {
+                                    label += '1 day';
                                 } else {
-                                    label += value.toFixed(1) + ' business days';
+                                    label += value.toFixed(1) + ' days';
                                 }
                                 return label;
                             }
@@ -71,18 +75,13 @@ class TrendChart {
         });
     }
 
-    calculateStat(data, type) {
+    calculateAverage(data) {
         if (data.length === 0) return 0;
-        if (type === 'median') {
-            const sorted = data.sort((a, b) => a - b);
-            const mid = Math.floor(sorted.length / 2);
-            return sorted.length % 2 !== 0 ? sorted[mid] : roundToNearest((sorted[mid - 1] + sorted[mid]) / 2);
-        }
         const sum = data.reduce((acc, val) => acc + val, 0);
         return roundToNearest(sum / data.length);
     }
 
-    update(durations, statType) {
+    update(durations) {
         // Get all unique months from all metrics
         const allMonths = new Set();
         Object.keys(this.colors).forEach(metric => {
@@ -96,7 +95,7 @@ class TrendChart {
 
         // Create datasets for each metric
         const datasets = Object.keys(this.colors).map(metric => {
-            const monthlyStats = months.map(month => {
+            const monthlyAverages = months.map(month => {
                 const monthData = durations
                     .map(d => d[metric])
                     .filter(d => d !== null)
@@ -105,13 +104,16 @@ class TrendChart {
                 
                 if (monthData.length === 0) return null;
                 
-                // Use the same calculation as barChart
-                return this.calculateStat(monthData, statType);
+                // Calculate average
+                const avg = this.calculateAverage(monthData);
+                
+                // Show 0.5 instead of 0 for better visual representation
+                return avg === 0 ? 0.5 : avg;
             });
 
             return {
                 label: metric,
-                data: monthlyStats,
+                data: monthlyAverages,
                 borderColor: this.colors[metric],
                 backgroundColor: this.colors[metric],
                 tension: 0.4,
@@ -119,9 +121,6 @@ class TrendChart {
                 spanGaps: true
             };
         });
-
-        // Update chart title to reflect current stat type
-        this.chart.options.scales.y.title.text = `Duration (business days) - ${statType === 'median' ? 'Median' : 'Average'}`;
 
         this.chart.data.labels = months.map(month => {
             const [year, monthNum] = month.split('-');
