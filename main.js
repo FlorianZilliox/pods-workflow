@@ -5,11 +5,21 @@ async function init() {
     const prDistribution = new PRDistributionChart();
     const testerDistribution = new TesterDistributionChart();
 
+    // Helper function to get quarter from date
+    const getQuarter = (date) => {
+        const d = new Date(date);
+        const month = d.getMonth(); // 0-11
+        const year = d.getFullYear();
+        const quarter = Math.floor(month / 3) + 1;
+        return `Q${quarter} - ${year}`;
+    };
+
     // Initialize filter elements
     const platformFilter = document.getElementById('platformFilter');
     const orgFilter = document.getElementById('orgFilter');
     const podFilter = document.getElementById('podFilter');
     const monthFilter = document.getElementById('monthFilter');
+    const quarterFilter = document.getElementById('quarterFilter');
 
     // Function to load data and populate filters
     const loadDataAndFilters = async (year) => {
@@ -21,6 +31,7 @@ async function init() {
         orgFilter.innerHTML = '<option value="all">All</option>';
         podFilter.innerHTML = '<option value="all">All</option>';
         monthFilter.innerHTML = '<option value="all">All</option>';
+        quarterFilter.innerHTML = '<option value="all">All</option>';
 
         // Get all months from all relevant date columns
         const months = [...new Set(
@@ -42,6 +53,29 @@ async function init() {
             const monthName = new Date(year, monthNum - 1).toLocaleString('en-US', { month: 'long' });
             option.textContent = `${monthName} ${year}`;
             monthFilter.appendChild(option);
+        });
+
+        // Get all quarters from all relevant date columns
+        const quarters = [...new Set(
+            rawData.slice(1).flatMap(row => {
+                return Array.from({length: 7}, (_, i) => row[i + 3])
+                    .filter(date => date)
+                    .map(date => getQuarter(date));
+            })
+        )].sort((a, b) => {
+            // Sort quarters properly: Q1-2024, Q2-2024, Q3-2024, Q4-2024, Q1-2025...
+            const [qa, ya] = a.split(' - ');
+            const [qb, yb] = b.split(' - ');
+            if (ya !== yb) return ya.localeCompare(yb);
+            return qa.localeCompare(qb);
+        });
+
+        // Populate quarter filter
+        quarters.forEach(quarter => {
+            const option = document.createElement('option');
+            option.value = quarter;
+            option.textContent = quarter;
+            quarterFilter.appendChild(option);
         });
 
         // Populate platform filter
@@ -78,6 +112,7 @@ async function init() {
         const selectedOrg = orgFilter.value;
         const selectedPod = podFilter.value;
         const selectedMonth = monthFilter.value;
+        const selectedQuarter = quarterFilter.value;
         
         // First filter by platform
         let filteredRows = rawData.slice(1).filter(row => 
@@ -106,13 +141,27 @@ async function init() {
                 );
             });
 
+        // Then filter by selected quarter if needed
+        const quarterFilteredDurations = selectedQuarter === 'all'
+            ? monthFilteredDurations
+            : monthFilteredDurations.filter(duration => {
+                return Object.values(duration).some(metric => {
+                    if (!metric || !metric.month) return false;
+                    // Extract date from month (YYYY-MM format)
+                    const [year, month] = metric.month.split('-');
+                    const date = new Date(year, parseInt(month) - 1, 1);
+                    const quarter = getQuarter(date);
+                    return quarter === selectedQuarter;
+                });
+            });
+
         const statType = document.querySelector('input[name="statType"]:checked').value;
 
         // Update all charts
-        barChart.update(monthFilteredDurations, statType);
-        trendChart.update(monthFilteredDurations, statType);
-        prDistribution.update(monthFilteredDurations);
-        testerDistribution.update(monthFilteredDurations);
+        barChart.update(quarterFilteredDurations, statType);
+        trendChart.update(quarterFilteredDurations, statType);
+        prDistribution.update(quarterFilteredDurations);
+        testerDistribution.update(quarterFilteredDurations);
 
         // Update Dev Cycle Time box - ALWAYS use average and sum of steps (regardless of toggle)
         const stepsToSum = [
@@ -126,7 +175,7 @@ async function init() {
 
         // Calculate sum of averages
         const stepAverages = stepsToSum.map(step => {
-            const values = monthFilteredDurations
+            const values = quarterFilteredDurations
                 .map(d => d[step])
                 .filter(d => d !== null)
                 .map(d => d.value);
@@ -161,6 +210,7 @@ async function init() {
     orgFilter.addEventListener('change', updateCharts);
     podFilter.addEventListener('change', updateCharts);
     monthFilter.addEventListener('change', updateCharts);
+    quarterFilter.addEventListener('change', updateCharts);
     document.querySelectorAll('input[name="statType"]').forEach(radio => {
         radio.addEventListener('change', updateCharts);
     });
