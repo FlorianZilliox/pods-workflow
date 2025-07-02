@@ -162,40 +162,6 @@ async function init() {
         trendChart.update(quarterFilteredDurations, statType);
         prDistribution.update(quarterFilteredDurations);
         testerDistribution.update(quarterFilteredDurations);
-
-        // Update Dev Cycle Time box - ALWAYS use average and sum of steps (regardless of toggle)
-        const stepsToSum = [
-            'Development Time',
-            'Pull Request Time', 
-            'Design Review Time',
-            'Tester Assignment Time',
-            'Testing Time',
-            'PO Validation Time'
-        ];
-
-        // Calculate sum of averages
-        const stepAverages = stepsToSum.map(step => {
-            const values = quarterFilteredDurations
-                .map(d => d[step])
-                .filter(d => d !== null)
-                .map(d => d.value);
-            
-            if (values.length === 0) return 0;
-            const sum = values.reduce((acc, val) => acc + val, 0);
-            const avg = roundToNearest(sum / values.length);
-            
-            // If the calculated avg is 0, count it as 0.5
-            return avg === 0 ? 0.5 : avg;
-        });
-        
-        const avgSum = Math.round(stepAverages.reduce((sum, avg) => sum + avg, 0));
-        
-        console.log('Dev Cycle Time card calculation (always average):', {
-            stepAverages,
-            avgSum
-        });
-        
-        document.getElementById('averageTime').textContent = avgSum;
     };
 
     // Year toggle handler
