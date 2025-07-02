@@ -25,6 +25,11 @@ async function init() {
     const loadDataAndFilters = async (year) => {
         // Fetch data for the selected year
         rawData = await fetchData(year);
+        console.log('Raw data loaded:', rawData.length, 'rows');
+        if (rawData.length > 1) {
+            console.log('Headers:', rawData[0]);
+            console.log('First data row:', rawData[1]);
+        }
 
         // Clear existing filter options (except "All")
         platformFilter.innerHTML = '<option value="all">All</option>';
@@ -79,7 +84,8 @@ async function init() {
         });
 
         // Populate platform filter
-        const platforms = [...new Set(rawData.slice(1).map(row => row[1]))].filter(p => p);
+        const platforms = [...new Set(rawData.slice(1).map(row => row[1]?.trim()))].filter(p => p);
+        console.log('Available platforms:', platforms);
         platforms.forEach(p => {
             const option = document.createElement('option');
             option.value = p;
@@ -88,7 +94,8 @@ async function init() {
         });
 
         // Populate org filter
-        const orgs = [...new Set(rawData.slice(1).map(row => row[11]))].filter(org => org);
+        const orgs = [...new Set(rawData.slice(1).map(row => row[11]?.trim()))].filter(org => org);
+        console.log('Available orgs:', orgs);
         orgs.forEach(org => {
             const option = document.createElement('option');
             option.value = org;
@@ -97,7 +104,8 @@ async function init() {
         });
 
         // Populate pod filter
-        const pods = [...new Set(rawData.slice(1).map(row => row[10]))].filter(pod => pod);
+        const pods = [...new Set(rawData.slice(1).map(row => row[10]?.trim()))].filter(pod => pod);
+        console.log('Available pods:', pods);
         pods.forEach(pod => {
             const option = document.createElement('option');
             option.value = pod;
@@ -114,23 +122,59 @@ async function init() {
         const selectedMonth = monthFilter.value;
         const selectedQuarter = quarterFilter.value;
         
+        console.log('Filters:', {
+            platform: selectedPlatform,
+            org: selectedOrg,
+            pod: selectedPod,
+            month: selectedMonth,
+            quarter: selectedQuarter
+        });
+        
         // First filter by platform
         let filteredRows = rawData.slice(1).filter(row => 
-            selectedPlatform === 'all' || row[1] === selectedPlatform
+            selectedPlatform === 'all' || (row[1] && row[1].trim() === selectedPlatform.trim())
         );
+        console.log('After platform filter:', filteredRows.length, 'rows');
+        
+        // Debug: Show unique orgs in platform-filtered data
+        if (selectedPlatform !== 'all' && filteredRows.length > 0) {
+            const orgsInPlatform = [...new Set(filteredRows.map(row => row[11]))].filter(org => org);
+            console.log(`Orgs available in platform "${selectedPlatform}":`, orgsInPlatform);
+        }
 
         // Then filter by org
         filteredRows = filteredRows.filter(row => 
-            selectedOrg === 'all' || row[11] === selectedOrg
+            selectedOrg === 'all' || (row[11] && row[11].trim() === selectedOrg.trim())
         );
+        console.log('After org filter:', filteredRows.length, 'rows');
+        
+        // Debug: Check for value mismatch
+        if (selectedOrg !== 'all' && filteredRows.length === 0) {
+            console.warn(`No tickets found for Org "${selectedOrg}" in Platform "${selectedPlatform}"`);
+            // Show what values we're comparing
+            const sampleRow = rawData.slice(1).find(row => row[1] === selectedPlatform);
+            if (sampleRow) {
+                console.log('Sample org value in data:', `"${sampleRow[11]}"`, 'Length:', sampleRow[11]?.length);
+                console.log('Selected org value:', `"${selectedOrg}"`, 'Length:', selectedOrg.length);
+            }
+        }
 
         // Then filter by pod
         filteredRows = filteredRows.filter(row => 
-            selectedPod === 'all' || row[10] === selectedPod
+            selectedPod === 'all' || (row[10] && row[10].trim() === selectedPod.trim())
         );
+        console.log('After pod filter:', filteredRows.length, 'rows');
+        
+        if (filteredRows.length > 0) {
+            console.log('Sample filtered row:', filteredRows[0]);
+        }
 
         // Calculate all durations
         const durations = calculateDurations(filteredRows);
+        console.log('Calculated durations:', durations.length, 'items');
+        if (durations.length > 0) {
+            console.log('Sample duration:', durations[0]);
+        }
         
         // Then filter by selected month if needed
         const monthFilteredDurations = selectedMonth === 'all' 
@@ -156,6 +200,12 @@ async function init() {
             });
 
         const statType = document.querySelector('input[name="statType"]:checked').value;
+
+        // Check if we have data to display
+        if (quarterFilteredDurations.length === 0) {
+            console.warn('No data to display after filtering');
+            // You could add a visual indicator here
+        }
 
         // Update all charts
         barChart.update(quarterFilteredDurations, statType);
