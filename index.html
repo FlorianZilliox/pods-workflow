@@ -139,7 +139,13 @@
             <div class="graph-container">
                 <canvas id="timeGraph"></canvas>
             </div>
-            <div class="graph-container">
+            <div class="graph-container trend-container">
+                <div class="trend-toggle">
+                    <input type="radio" id="workflowSteps" name="trendView" value="steps" checked>
+                    <label for="workflowSteps">Workflow Steps</label>
+                    <input type="radio" id="devCycle" name="trendView" value="cycle">
+                    <label for="devCycle">Dev Cycle</label>
+                </div>
                 <canvas id="trendGraph"></canvas>
             </div>
         </div>
